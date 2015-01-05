@@ -23,6 +23,7 @@ type {{.TypeName}} interface {
 	{{end}}
 }
 
+{{if .ExhaustionChecker}}
 // A {{.TypeName}}Exhaustive is a {{.TypeName}} that can be used to check
 // exhaustivity in tests
 type {{.TypeName}}Exhaustive struct {
@@ -42,6 +43,7 @@ func (se {{.TypeName}}Exhaustive) Exhaustive() bool {
 
 	return true
 }
+{{end}}
 
 {{range $recvType := .Variants}}
 	{{range $variants}}
