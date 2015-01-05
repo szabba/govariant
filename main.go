@@ -30,6 +30,9 @@ there must be at least two of them.
 
 func init() {
 
+	flag.StringVar(&config.PkgName, "pkg", os.Getenv("GOPACKAGE"),
+		"specifies the package name; defaults to $GOPACKAGE")
+
 	flag.Parse()
 
 	switch len(flag.Args()) {
@@ -41,9 +44,10 @@ func init() {
 		exitWithUsage("only one variant specified")
 	}
 
-	config.PkgName = os.Getenv("GOPACKAGE")
 	if config.PkgName == "" {
-		exitWithUsage("the GOPACKAGE environment variable must not be empty")
+		exitWithUsage(
+			"set the package either throug the -pkg flag or GOPACKAGE " +
+				"environment variable")
 	}
 
 	config.TypeName = flag.Args()[1]
