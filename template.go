@@ -12,8 +12,14 @@ package {{.PkgName}}
 // A {{.TypeName}} is one of 
 // {{range .Variants}}
 //     - {{.}}{{end}}
+//
+// In each implementation exactly one of the methods should return a true
+// boolean value.
 type {{.TypeName}} interface {
-	{{range .Variants}} {{.}}() ({{.}}, bool)
+	{{range .Variants}}
+	// {{.}} returns a {{.}} and a boolean. When the second return value is true,
+	// the {{$typeName}} is the returned {{.}}.
+	{{.}}() ({{.}}, bool)
 	{{end}}
 }
 

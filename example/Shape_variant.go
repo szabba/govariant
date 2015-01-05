@@ -4,8 +4,17 @@ package example
 //
 //     - Circle
 //     - Rectangle
+//
+// In each implementation exactly one of the methods should return a true
+// boolean value.
 type Shape interface {
+
+	// Circle returns a Circle and a boolean. When the second return value is true,
+	// the Shape is the returned Circle.
 	Circle() (Circle, bool)
+
+	// Rectangle returns a Rectangle and a boolean. When the second return value is true,
+	// the Shape is the returned Rectangle.
 	Rectangle() (Rectangle, bool)
 }
 
