@@ -75,8 +75,9 @@ func main() {
 }
 
 func exitWithUsage(msg string) {
-	fmt.Printf("%#v\n", flag.Args())
-	fmt.Println(msg)
-	fmt.Print(usage)
+	fmt.Println("govariant: ", msg)
+	fmt.Println()
+	fmt.Println(usage)
+	flag.PrintDefaults()
 	os.Exit(1)
 }
