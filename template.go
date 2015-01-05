@@ -17,7 +17,7 @@ type {{.TypeName}} interface {
 	{{end}}
 }
 
-// A {{.TypeName}}Exhaustive is a {{.TypeName}} that can be use to check
+// A {{.TypeName}}Exhaustive is a {{.TypeName}} that can be used to check
 // exhaustivity in tests
 type {{.TypeName}}Exhaustive struct {
 	{{.TypeName}}
