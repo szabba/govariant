@@ -19,8 +19,6 @@ var config struct {
 	PkgName  string
 	TypeName string
 	Variants []string
-
-	ExhaustionChecker bool
 }
 
 var usage = `
@@ -31,9 +29,6 @@ there must be at least two of them.
 `[1:]
 
 func init() {
-	flag.BoolVar(
-		&config.ExhaustionChecker, "exhaust", false,
-		"should we generate the exhaust checker?")
 
 	flag.Parse()
 

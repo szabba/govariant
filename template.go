@@ -50,26 +50,4 @@ func (w wrap{{.}}{{$typeName}}) {{.}}() ({{.}}, bool) {
 	return w.wrapped{{.}}, true
 }
 {{end}}
-
-{{if .ExhaustionChecker}}
-// A {{.TypeName}}Exhaustive is a {{.TypeName}} that can be used to check
-// exhaustivity in tests
-type {{.TypeName}}Exhaustive struct {
-	{{.TypeName}}
-
-	{{range .Variants}} {{.}}Called bool
-	{{end}}
-}
-
-// Checks whether all the variants of the {{.TypeName}} were considered.
-func (se {{.TypeName}}Exhaustive) Exhaustive() bool {
-	{{range .Variants}}
-	if !se.{{.}}Called {
-		return false
-	}
-	{{end}}
-
-	return true
-}
-{{end}}
 `
