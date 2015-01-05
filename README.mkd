@@ -42,7 +42,7 @@ the file `Sum_variant.go`.
 
 # Example
 
-The exact code generated for
+For the following code and generate directive
 
 ```go
 package example
@@ -64,7 +64,7 @@ type Point struct {
 }
 ```
 
-should be the following code, in a file named `Shape_variant.go`:
+you should get a file called `Shape_variant.go` with the following contents
 
 ```go
 package example
