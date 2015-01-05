@@ -2,7 +2,7 @@ package example
 
 //go:generate govariant -exhaust true Shape Circle Rectangle
 
-type Cirlce struct {
+type Circle struct {
 	Center Point
 	Radius float64
 }
