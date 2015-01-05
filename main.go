@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"text/template"
 )
 
 var config struct {
@@ -39,9 +40,25 @@ func init() {
 		os.Exit(1)
 	}
 
+	config.PkgName = os.Getenv("GOPACKAGE")
+	if config.PkgName == "" {
+		log.Println("the GOPACKAGE environment variable must not be empty")
+		fmt.Print(usage)
+		os.Exit(1)
+	}
+
 	config.TypeName = os.Args[1]
 	config.Variants = os.Args[2:]
 }
 
 func main() {
+	t := template.Must(template.New("variants").Parse(templateSource))
+
+	f, err := os.Create(config.TypeName + "_variant.go")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	t.Execute(f, config)
 }
