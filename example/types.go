@@ -1,6 +1,6 @@
 package example
 
-//go:generate govariant -exhaust true Shape Circle Rectangle
+//go:generate govariant Shape Circle Rectangle
 
 type Circle struct {
 	Center Point

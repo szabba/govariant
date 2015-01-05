@@ -36,11 +36,11 @@ func init() {
 	flag.Parse()
 
 	switch len(flag.Args()) {
-	case 0, 1:
+	case 0:
 		exitWithUsage("result type name not specified")
-	case 2:
+	case 1:
 		exitWithUsage("no variants specified")
-	case 3:
+	case 2:
 		exitWithUsage("only one variant specified")
 	}
 
@@ -50,8 +50,8 @@ func init() {
 				"environment variable")
 	}
 
-	config.TypeName = flag.Args()[1]
-	config.Variants = flag.Args()[2:]
+	config.TypeName = flag.Args()[0]
+	config.Variants = flag.Args()[1:]
 }
 
 func main() {
@@ -75,6 +75,7 @@ func main() {
 }
 
 func exitWithUsage(msg string) {
+	fmt.Printf("%#v\n", flag.Args())
 	fmt.Println(msg)
 	fmt.Print(usage)
 	os.Exit(1)
