@@ -1,6 +1,6 @@
 package example
 
-//go:generate govariant Sum Circle Rectangle
+//go:generate govariant Shape Circle Rectangle
 
 type Cirlce struct {
 	Center Point
