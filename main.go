@@ -30,24 +30,16 @@ there must be at least two of them.
 func init() {
 	switch len(os.Args) {
 	case 0, 1:
-		log.Println("result type name not specified")
-		fmt.Print(usage)
-		os.Exit(1)
+		exitWithUsage("result type name not specified")
 	case 2:
-		log.Println("no variants specified")
-		fmt.Print(usage)
-		os.Exit(1)
+		exitWithUsage("no variants specified")
 	case 3:
-		log.Println("only one variant specified")
-		fmt.Print(usage)
-		os.Exit(1)
+		exitWithUsage("only one variant specified")
 	}
 
 	config.PkgName = os.Getenv("GOPACKAGE")
 	if config.PkgName == "" {
-		log.Println("the GOPACKAGE environment variable must not be empty")
-		fmt.Print(usage)
-		os.Exit(1)
+		exitWithUsage("the GOPACKAGE environment variable must not be empty")
 	}
 
 	config.TypeName = os.Args[1]
@@ -72,4 +64,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func exitWithUsage(msg string) {
+	fmt.Println(msg)
+	fmt.Print(usage)
+	os.Exit(1)
 }
