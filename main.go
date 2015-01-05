@@ -5,7 +5,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
+	"io/ioutil"
 	"log"
 	"os"
 	"text/template"
@@ -54,11 +57,19 @@ func init() {
 func main() {
 	t := template.Must(template.New("variants").Parse(templateSource))
 
-	f, err := os.Create(config.TypeName + "_variant.go")
+	var b bytes.Buffer
+	err := t.Execute(&b, config)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
 
-	t.Execute(f, config)
+	fmted, err := format.Source(b.Bytes())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = ioutil.WriteFile(config.TypeName+"_variant.go", fmted, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

@@ -38,4 +38,4 @@ directory. Having said that, a
 ```
 
 should generate the code for the type Sum of which X, Y and Z are variants in
-the file `Sum_variant.go`. Also, the code will be laid out awkwardly. Fmt it!
+the file `Sum_variant.go`.
