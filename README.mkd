@@ -126,27 +126,4 @@ type wrapRectangleShape struct {
 func (w wrapRectangleShape) Rectangle() (Rectangle, bool) {
 	return w.wrappedRectangle, true
 }
-
-// A ShapeExhaustive is a Shape that can be used to check
-// exhaustivity in tests
-type ShapeExhaustive struct {
-	Shape
-
-	CircleCalled    bool
-	RectangleCalled bool
-}
-
-// Checks whether all the variants of the Shape were considered.
-func (se ShapeExhaustive) Exhaustive() bool {
-
-	if !se.CircleCalled {
-		return false
-	}
-
-	if !se.RectangleCalled {
-		return false
-	}
-
-	return true
-}
 ```
