@@ -5,24 +5,18 @@ Go doesn't have sum types. We emulate them -- most often using the empty
 
 Still... I wanted to try out another way of doing this -- and write a code
 generator for it, which is all the rage. Accidentally, it is the ideal case for
-a simple code generator, as it requires writing `O(n^2)` methods for a type
-with `n` variants.
+a simple code generator, as it requires writing repetitive methods on several
+types.
 
 The basic idea is to encode a sum type with an interface with one method
 corresponding to each variant. Those methods are named after the variant type
 and return both a value of it and a boolean. The return values correspond to a
-type assertion.
-
-Why bother? Well, the sum type then documents exactly what variants it
-contains (not true when using `interface{}`).
-
-Also, since it's an interface it's possible for types other than the variants
-to implement them. And there is one use case I can think of for that --
-exhaustiveness checking in tests.
+type assertion. For each variant we also add a method that converts it to the
+sum type.
 
 However, this approach has drawbacks and limitations. We can't define methods
-on builtin types or interfaces, so they cannot be variants if we want all
-methods to be auto-generated.
+on builtin types, types imported from other packages or interfaces, so they
+cannot be variants if we want all methods to be auto-generated.
 
 And since the actual type is an interface, the language considers nil a
 permissible value.
@@ -74,8 +68,8 @@ package example
 //     - Circle
 //     - Rectangle
 //
-// In each implementation exactly one of the methods should return a true
-// boolean value.
+// In each implementation exactly one of the methods should have the second
+// return value be true.
 type Shape interface {
 
 	// Circle returns a Circle and a boolean. When the second return value is true,
@@ -85,6 +79,52 @@ type Shape interface {
 	// Rectangle returns a Rectangle and a boolean. When the second return value is true,
 	// the Shape is the returned Rectangle.
 	Rectangle() (Rectangle, bool)
+}
+
+// A coreShape provides default implementations for the methods of a
+// Shape. The wrapper types only redefine the one for the associated variant.
+type coreShape struct{}
+
+func (_ coreShape) Circle() (Circle, bool) {
+	var v Circle
+	return v, false
+}
+
+func (_ coreShape) Rectangle() (Rectangle, bool) {
+	var v Rectangle
+	return v, false
+}
+
+// Shape converts a Circle to an instance of the sum type Shape.
+func (v Circle) Shape() Shape {
+	return wrapCircleShape{
+		wrappedCircle: v,
+	}
+}
+
+type wrapCircleShape struct {
+	coreShape
+	wrappedCircle Circle
+}
+
+func (w wrapCircleShape) Circle() (Circle, bool) {
+	return w.wrappedCircle, true
+}
+
+// Shape converts a Rectangle to an instance of the sum type Shape.
+func (v Rectangle) Shape() Shape {
+	return wrapRectangleShape{
+		wrappedRectangle: v,
+	}
+}
+
+type wrapRectangleShape struct {
+	coreShape
+	wrappedRectangle Rectangle
+}
+
+func (w wrapRectangleShape) Rectangle() (Rectangle, bool) {
+	return w.wrappedRectangle, true
 }
 
 // A ShapeExhaustive is a Shape that can be used to check
@@ -108,27 +148,5 @@ func (se ShapeExhaustive) Exhaustive() bool {
 	}
 
 	return true
-}
-
-// Circle implements the corresponding method of Shape on the Circle type.
-func (sv Circle) Circle() (Circle, bool) {
-	return sv, true
-}
-
-// Rectangle implements the corresponding method of Shape on the Circle type.
-func (_ Circle) Rectangle() (Rectangle, bool) {
-	var v Rectangle
-	return v, false
-}
-
-// Circle implements the corresponding method of Shape on the Rectangle type.
-func (_ Rectangle) Circle() (Circle, bool) {
-	var v Circle
-	return v, false
-}
-
-// Rectangle implements the corresponding method of Shape on the Rectangle type.
-func (sv Rectangle) Rectangle() (Rectangle, bool) {
-	return sv, true
 }
 ```

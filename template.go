@@ -7,14 +7,13 @@ package main
 var templateSource = `
 package {{.PkgName}}
 {{ $typeName := .TypeName }}
-{{ $variants := .Variants }}
 
 // A {{.TypeName}} is one of 
 // {{range .Variants}}
 //     - {{.}}{{end}}
 //
-// In each implementation exactly one of the methods should return a true
-// boolean value.
+// In each implementation exactly one of the methods should have the second
+// return value be true.
 type {{.TypeName}} interface {
 	{{range .Variants}}
 	// {{.}} returns a {{.}} and a boolean. When the second return value is true,
@@ -22,6 +21,35 @@ type {{.TypeName}} interface {
 	{{.}}() ({{.}}, bool)
 	{{end}}
 }
+
+// A core{{.TypeName}} provides default implementations for the methods of a
+// Shape. The wrapper types only redefine the one for the associated variant.
+type core{{.TypeName}} struct{}
+
+{{range .Variants}}
+func (_ core{{$typeName}}) {{.}}() ({{.}}, bool) {
+	var v {{.}}
+	return v, false
+}
+{{end}}
+
+{{range .Variants}}
+// {{$typeName}} converts a {{.}} to an instance of the sum type {{$typeName}}.
+func (v {{.}}) {{$typeName}}() {{$typeName}} {
+	return wrap{{.}}{{$typeName}}{
+		wrapped{{.}}: v,
+	}
+}
+
+type wrap{{.}}{{$typeName}} struct {
+	core{{$typeName}}
+	wrapped{{.}} {{.}}
+}
+
+func (w wrap{{.}}{{$typeName}}) {{.}}() ({{.}}, bool) {
+	return w.wrapped{{.}}, true
+}
+{{end}}
 
 {{if .ExhaustionChecker}}
 // A {{.TypeName}}Exhaustive is a {{.TypeName}} that can be used to check
@@ -43,19 +71,5 @@ func (se {{.TypeName}}Exhaustive) Exhaustive() bool {
 
 	return true
 }
-{{end}}
-
-{{range $recvType := .Variants}}
-	{{range $variants}}
-		// {{.}} implements the corresponding method of {{$typeName}} on the {{$recvType}} type.
-		{{if eq $recvType . }} func (sv {{.}}) {{.}}() ({{.}}, bool) {
-				return sv, true
-			}
-		{{else}} func (_ {{$recvType}}) {{.}}() ({{.}}, bool) {
-				var v {{.}}
-				return v, false
-			}
-		{{end}}
-	{{end}}
 {{end}}
 `
