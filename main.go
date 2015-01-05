@@ -35,6 +35,12 @@ func init() {
 
 	flag.Parse()
 
+	if config.PkgName == "" {
+		exitWithUsage(
+			"set the package either throug the -pkg flag or GOPACKAGE " +
+				"environment variable")
+	}
+
 	switch len(flag.Args()) {
 	case 0:
 		exitWithUsage("result type name not specified")
@@ -42,12 +48,6 @@ func init() {
 		exitWithUsage("no variants specified")
 	case 2:
 		exitWithUsage("only one variant specified")
-	}
-
-	if config.PkgName == "" {
-		exitWithUsage(
-			"set the package either throug the -pkg flag or GOPACKAGE " +
-				"environment variable")
 	}
 
 	config.TypeName = flag.Args()[0]
