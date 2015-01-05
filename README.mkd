@@ -1,0 +1,28 @@
+# A generator for Go(lang) sum types
+
+Go doesn't have sum types. We emulate them -- most often using the empty
+`interface{}` in conjunction with a type switch. And that works fine.
+
+Still... I wanted to try out another way of doing this -- and write a code
+generator for it, which is all the rage. Accidentally, it is the ideal case for
+a simple code generator, as it requires writing `O(n^2)` methods for a type
+with `n` variants.
+
+The basic idea is to encode a sum type with an interface with one method
+corresponding to each variant. Those methods are named after the variant type
+and return both a value of it and a boolean. The return values correspond to a
+type assertion.
+
+Why bother? Well, the sum type then documents exactly what variants it
+contains (not true when using `interface{}`).
+
+Also, since it's an interface it's possible for types other than the variants
+to implement them. And there is one use case I can think of for that --
+exhaustiveness checking in tests.
+
+However, this approach has drawbacks and limitations. We can't define methods
+on builtin types or interfaces, so they cannot be variants if we want all
+methods to be auto-generated.
+
+And since the actual type is an interface, the language considers nil a
+permissible value.
