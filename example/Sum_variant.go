@@ -9,7 +9,7 @@ type Sum interface {
 	Rectangle() (Rectangle, bool)
 }
 
-// A SumExhaustive is a Sum that can be use to check
+// A SumExhaustive is a Sum that can be used to check
 // exhaustivity in tests
 type SumExhaustive struct {
 	Sum
