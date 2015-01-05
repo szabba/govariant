@@ -37,7 +37,7 @@ the file `Sum_variant.go`.
 # Example
 
 For the following code `go generate` will produce a package whose godoc you can
-see [here](godoc.org/github.com/szabba/govariant/example).
+see [here](http://godoc.org/github.com/szabba/govariant/example).
 
 ```go
 package example
