@@ -2,12 +2,19 @@
 package example
 
 
+
+// A Sum is one of 
+// 
+//     - Circle
+//     - Rectangle
 type Sum interface {
 	 Circle() (Circle, bool)
 	 Rectangle() (Rectangle, bool)
 	
 }
 
+// A SumExhaustive is a Sum that can be use to check
+// exhaustivity in tests
 type SumExhaustive struct {
 	Sum
 
@@ -16,6 +23,7 @@ type SumExhaustive struct {
 	
 }
 
+// Checks whether all the variants of the Sum were considered.
 func (se SumExhaustive) Exhaustive() bool {
 	
 	if !se.CircleCalled {
@@ -32,14 +40,14 @@ func (se SumExhaustive) Exhaustive() bool {
 
 
 	
-		
-			func (sv Circle) Circle() (Circle, bool) {
+		// Circle implements the corresponding method of Sum on the Circle type.
+		 func (sv Circle) Circle() (Circle, bool) {
 				return sv, true
 			}
 		
 	
-		
-			func (_ Circle) Rectangle() (Rectangle, bool) {
+		// Rectangle implements the corresponding method of Sum on the Circle type.
+		 func (_ Circle) Rectangle() (Rectangle, bool) {
 				var v Rectangle
 				return v, false
 			}
@@ -47,15 +55,15 @@ func (se SumExhaustive) Exhaustive() bool {
 	
 
 	
-		
-			func (_ Rectangle) Circle() (Circle, bool) {
+		// Circle implements the corresponding method of Sum on the Rectangle type.
+		 func (_ Rectangle) Circle() (Circle, bool) {
 				var v Circle
 				return v, false
 			}
 		
 	
-		
-			func (sv Rectangle) Rectangle() (Rectangle, bool) {
+		// Rectangle implements the corresponding method of Sum on the Rectangle type.
+		 func (sv Rectangle) Rectangle() (Rectangle, bool) {
 				return sv, true
 			}
 		

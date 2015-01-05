@@ -6,13 +6,19 @@ package main
 
 var templateSource = `
 package {{.PkgName}}
-{{ $variants := .Variants}}
+{{ $typeName := .TypeName }}
+{{ $variants := .Variants }}
 
+// A {{.TypeName}} is one of 
+// {{range .Variants}}
+//     - {{.}}{{end}}
 type {{.TypeName}} interface {
 	{{range .Variants}} {{.}}() ({{.}}, bool)
 	{{end}}
 }
 
+// A {{.TypeName}}Exhaustive is a {{.TypeName}} that can be use to check
+// exhaustivity in tests
 type {{.TypeName}}Exhaustive struct {
 	{{.TypeName}}
 
@@ -20,6 +26,7 @@ type {{.TypeName}}Exhaustive struct {
 	{{end}}
 }
 
+// Checks whether all the variants of the {{.TypeName}} were considered.
 func (se {{.TypeName}}Exhaustive) Exhaustive() bool {
 	{{range .Variants}}
 	if !se.{{.}}Called {
@@ -32,12 +39,11 @@ func (se {{.TypeName}}Exhaustive) Exhaustive() bool {
 
 {{range $recvType := .Variants}}
 	{{range $variants}}
-		{{if eq $recvType . }}
-			func (sv {{.}}) {{.}}() ({{.}}, bool) {
+		// {{.}} implements the corresponding method of {{$typeName}} on the {{$recvType}} type.
+		{{if eq $recvType . }} func (sv {{.}}) {{.}}() ({{.}}, bool) {
 				return sv, true
 			}
-		{{else}}
-			func (_ {{$recvType}}) {{.}}() ({{.}}, bool) {
+		{{else}} func (_ {{$recvType}}) {{.}}() ({{.}}, bool) {
 				var v {{.}}
 				return v, false
 			}
