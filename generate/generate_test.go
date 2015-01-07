@@ -79,3 +79,36 @@ func TestGeneratedSourceHasRightPackageClause(t *testing.T) {
 		}
 	}
 }
+
+func TestGeneratedSumTypeIsInterface(t *testing.T) {
+	pkg := "pkg"
+	sumType := "Sum"
+	variants := []string{"X", "Y", "Z"}
+
+	src := Generate(pkg, sumType, variants...)
+
+	fset := token.NewFileSet()
+	f, _ := parser.ParseFile(fset, "src.go", src, 0)
+
+	typ, ok := typeNamed(f, sumType)
+	if !ok {
+		t.Fatalf("generated source must contain type declaration for %s type", sumType)
+	}
+
+	_, isInterface := typ.Type.(*ast.InterfaceType)
+	if !isInterface {
+		t.Errorf("generated %s type should be an interface not a %T", sumType, typ.Type)
+	}
+}
+
+// Looks for the declaration of a type named name in the specified file. The
+// second return value is false if a type with the given name is not declared
+// in the file.
+func typeNamed(f *ast.File, name string) (*ast.TypeSpec, bool) {
+	for _, typ := range typesInFile(f) {
+		if typ.Name.Name == name {
+			return typ, true
+		}
+	}
+	return nil, false
+}
