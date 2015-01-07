@@ -8,10 +8,11 @@ import (
 )
 
 func TestGeneratedSourceParsesWithoutErrors(t *testing.T) {
+	pkg := "pkg"
 	sumType := "Sum"
 	variants := []string{"X", "Y", "Z"}
 
-	src := Generate(sumType, variants...)
+	src := Generate(pkg, sumType, variants...)
 
 	fset := token.NewFileSet()
 	_, err := parser.ParseFile(fset, "src.go", src, 0)
@@ -21,10 +22,11 @@ func TestGeneratedSourceParsesWithoutErrors(t *testing.T) {
 }
 
 func TestGeneratedSourceDeclaresTypeWithNameGiven(t *testing.T) {
+	pkg := "pkg"
 	sumType := "Sum"
 	variants := []string{"X", "Y", "Z"}
 
-	src := Generate(sumType, variants...)
+	src := Generate(pkg, sumType, variants...)
 
 	fset := token.NewFileSet()
 	f, _ := parser.ParseFile(fset, "src.go", src, 0)
@@ -59,4 +61,21 @@ func typesInFile(f *ast.File) []*ast.TypeSpec {
 	}
 
 	return types
+}
+
+func TestGeneratedSourceHasRightPackageClause(t *testing.T) {
+	for _, pkg := range []string{"pkg", "pack"} {
+		sumType := "Sum"
+		variants := []string{"X", "Y", "Z"}
+
+		src := Generate(pkg, sumType, variants...)
+
+		fset := token.NewFileSet()
+		f, _ := parser.ParseFile(fset, "src.go", src, parser.PackageClauseOnly)
+
+		if f.Name.Name != pkg {
+			t.Errorf("generated file should belong to package %s not %s",
+				pkg, f.Name.Name)
+		}
+	}
 }
