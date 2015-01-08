@@ -93,15 +93,7 @@ func TestGeneratedSumTypeIsInterface(t *testing.T) {
 	fset := token.NewFileSet()
 	f, _ := parser.ParseFile(fset, "src.go", src, 0)
 
-	typ, ok := typeNamed(f, sumType)
-	if !ok {
-		t.Fatalf("generated source must contain type declaration for %s type", sumType)
-	}
-
-	_, isInterface := typ.Type.(*ast.InterfaceType)
-	if !isInterface {
-		t.Errorf("generated %s type should be an interface not a %T", sumType, typ.Type)
-	}
+	mustBeInterface(t, f, sumType)
 }
 
 // Looks for the declaration of a type named name in the specified file. The
@@ -126,18 +118,10 @@ func TestGeneratedSumTypeHasMethodsWithExpectedNames(t *testing.T) {
 	fset := token.NewFileSet()
 	f, _ := parser.ParseFile(fset, "src.go", src, 0)
 
-	typ, ok := typeNamed(f, sumType)
-	if !ok {
-		t.Fatalf("generated source must contain type declaration for %s type", sumType)
-	}
-
-	asInterface, ok := typ.Type.(*ast.InterfaceType)
-	if !ok {
-		t.Errorf("generated %s type should be an interface not a %T", sumType, typ.Type)
-	}
+	typ := mustBeInterface(t, f, sumType)
 
 	namesFound := make(map[string]bool)
-	for _, method := range asInterface.Methods.List {
+	for _, method := range typ.Methods.List {
 		name := method.Names[0].Name
 		namesFound[name] = true
 	}
@@ -159,28 +143,37 @@ func TestGeneratedSumTypesHaveMethodsWithExpectedResultsCount(t *testing.T) {
 	fset := token.NewFileSet()
 	f, _ := parser.ParseFile(fset, "src.go", src, 0)
 
-	typ, ok := typeNamed(f, sumType)
-	if !ok {
-		t.Fatalf("generated source must contain type declaration for %s type", sumType)
-	}
-
-	asInterface, ok := typ.Type.(*ast.InterfaceType)
-	if !ok {
-		t.Fatalf("generated %s type should be an interface not a %T", sumType, typ.Type)
-	}
+	typ := mustBeInterface(t, f, sumType)
 
 	variantSet := stringSet(variants...)
-	for _, method := range asInterface.Methods.List {
+	for _, method := range typ.Methods.List {
 
 		name := method.Names[0].Name
 		if variantSet[name] {
 
-			typ, isFunc := method.Type.(*ast.FuncType)
+			funcTyp, isFunc := method.Type.(*ast.FuncType)
 			if isFunc {
-				hasTwoResults(t, sumType, name, typ)
+				hasTwoResults(t, sumType, name, funcTyp)
 			}
 		}
 	}
+}
+
+// mustBeInterface ensures that type f contains a type named typName and that
+// it's an interface, returning it's AST representation. Otherwise it
+// immediately fails the test.
+func mustBeInterface(t *testing.T, f *ast.File, typName string) *ast.InterfaceType {
+	typ, ok := typeNamed(f, typName)
+	if !ok {
+		t.Fatalf("generated source must contain type declaration for %s type", typName)
+	}
+
+	asInterface, ok := typ.Type.(*ast.InterfaceType)
+	if !ok {
+		t.Fatalf("generated %s type should be an interface not a %T", typName, typ.Type)
+	}
+
+	return asInterface
 }
 
 var _ = fmt.Println
