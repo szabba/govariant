@@ -112,3 +112,36 @@ func typeNamed(f *ast.File, name string) (*ast.TypeSpec, bool) {
 	}
 	return nil, false
 }
+
+func TestGeneratedSumTypeHasMethodsWithExpectedNames(t *testing.T) {
+	pkg := "pkg"
+	sumType := "Sum"
+	variants := []string{"X", "Y", "Z"}
+
+	src := Generate(pkg, sumType, variants...)
+
+	fset := token.NewFileSet()
+	f, _ := parser.ParseFile(fset, "src.go", src, 0)
+
+	typ, ok := typeNamed(f, sumType)
+	if !ok {
+		t.Fatalf("generated source must contain type declaration for %s type", sumType)
+	}
+
+	asInterface, ok := typ.Type.(*ast.InterfaceType)
+	if !ok {
+		t.Errorf("generated %s type should be an interface not a %T", sumType, typ.Type)
+	}
+
+	namesFound := make(map[string]bool)
+	for _, method := range asInterface.Methods.List {
+		name := method.Names[0].Name
+		namesFound[name] = true
+	}
+
+	for _, variant := range variants {
+		if !namesFound[variant] {
+			t.Errorf("generated type should contain method named %s", variant)
+		}
+	}
+}
