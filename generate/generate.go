@@ -8,7 +8,7 @@ func Generate(pkg, sumType string, variants ...string) string {
 	out := fmt.Sprintf("package %s\n\n", pkg)
 	out += fmt.Sprintf("type %s interface {\n", sumType)
 	for _, variant := range variants {
-		out += fmt.Sprintf("\t%s()\n", variant)
+		out += fmt.Sprintf("\t%s() (bool,  int)\n", variant)
 	}
 	out += "}"
 	return out

@@ -1,10 +1,13 @@
 package generate
 
 import (
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"testing"
+
+	"github.com/kr/pretty"
 )
 
 func TestGeneratedSourceParsesWithoutErrors(t *testing.T) {
@@ -144,4 +147,70 @@ func TestGeneratedSumTypeHasMethodsWithExpectedNames(t *testing.T) {
 			t.Errorf("generated type should contain method named %s", variant)
 		}
 	}
+}
+
+func TestGeneratedSumTypesHaveMethodsWithExpectedResultsCount(t *testing.T) {
+	pkg := "pkg"
+	sumType := "Sum"
+	variants := []string{"X", "Y", "Z"}
+
+	src := Generate(pkg, sumType, variants...)
+
+	fset := token.NewFileSet()
+	f, _ := parser.ParseFile(fset, "src.go", src, 0)
+
+	typ, ok := typeNamed(f, sumType)
+	if !ok {
+		t.Fatalf("generated source must contain type declaration for %s type", sumType)
+	}
+
+	asInterface, ok := typ.Type.(*ast.InterfaceType)
+	if !ok {
+		t.Fatalf("generated %s type should be an interface not a %T", sumType, typ.Type)
+	}
+
+	variantSet := stringSet(variants...)
+	for _, method := range asInterface.Methods.List {
+
+		name := method.Names[0].Name
+		if variantSet[name] {
+
+			typ, isFunc := method.Type.(*ast.FuncType)
+			if isFunc {
+				hasTwoResults(t, sumType, name, typ)
+			}
+		}
+	}
+}
+
+var _ = fmt.Println
+var _ = pretty.Println
+
+func hasTwoResults(t *testing.T, sumType, funcName string, typ *ast.FuncType, typenames ...string) {
+	if resultsLen(typ) != 2 {
+		t.Errorf("method %s of type %s should have two return values", funcName, sumType)
+	}
+}
+
+func resultsLen(typ *ast.FuncType) int {
+	if typ.Results == nil {
+		return 0
+	}
+	sum := 0
+	for _, field := range typ.Results.List {
+		if field.Names != nil {
+			sum += len(field.Names)
+		} else {
+			sum++
+		}
+	}
+	return sum
+}
+
+func stringSet(elems ...string) map[string]bool {
+	set := make(map[string]bool)
+	for _, elem := range elems {
+		set[elem] = true
+	}
+	return set
 }
