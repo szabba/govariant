@@ -133,7 +133,7 @@ func TestGeneratedSumTypeHasMethodsWithExpectedNames(t *testing.T) {
 	}
 }
 
-func TestGeneratedSumTypesHaveMethodsWithExpectedResultsCount(t *testing.T) {
+func TestGeneratedSumTypesHaveMethodsWithExpectedResultTypes(t *testing.T) {
 	pkg := "pkg"
 	sumType := "Sum"
 	variants := []string{"X", "Y", "Z"}
@@ -153,7 +153,8 @@ func TestGeneratedSumTypesHaveMethodsWithExpectedResultsCount(t *testing.T) {
 
 			funcTyp, isFunc := method.Type.(*ast.FuncType)
 			if isFunc {
-				hasTwoResults(t, sumType, name, funcTyp)
+
+				hasResults(t, sumType, name, funcTyp, name, "bool")
 			}
 		}
 	}
@@ -179,25 +180,41 @@ func mustBeInterface(t *testing.T, f *ast.File, typName string) *ast.InterfaceTy
 var _ = fmt.Println
 var _ = pretty.Println
 
-func hasTwoResults(t *testing.T, sumType, funcName string, typ *ast.FuncType, typenames ...string) {
-	if resultsLen(typ) != 2 {
+// hasResults checks that the named method of the named sumType has the
+// specified type names by inspecting it's signature sig.
+func hasResults(t *testing.T, sumType, funcName string, sig *ast.FuncType, typenames ...string) {
+	results := resultTypes(sig)
+
+	if len(results) != len(typenames) {
 		t.Errorf("method %s of type %s should have two return values", funcName, sumType)
+		return
+	}
+
+	for i, actualResultType := range results {
+		expected := typenames[i]
+
+		if actualResultType != expected {
+			t.Errorf("%d-th result type of %s's method %s should be %s, not %s",
+				i, sumType, funcName, expected, actualResultType)
+		}
 	}
 }
 
-func resultsLen(typ *ast.FuncType) int {
-	if typ.Results == nil {
-		return 0
-	}
-	sum := 0
-	for _, field := range typ.Results.List {
-		if field.Names != nil {
-			sum += len(field.Names)
-		} else {
-			sum++
+func resultTypes(sig *ast.FuncType) []string {
+	types := []string{}
+
+	for _, group := range sig.Results.List {
+		typ := group.Type.(*ast.Ident).Name
+
+		for i := 0; i < len(group.Names); i++ {
+			types = append(types, typ)
+		}
+		if len(group.Names) == 0 {
+			types = append(types, typ)
 		}
 	}
-	return sum
+
+	return types
 }
 
 func stringSet(elems ...string) map[string]bool {
